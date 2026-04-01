@@ -7,6 +7,7 @@ const cors = require("cors");
 
 //create express app
 const app = express();
+const corsDebug = process.env.CORS_DEBUG === "true";
 
 const defaultOrigins = [
   "http://localhost:3001",
@@ -33,6 +34,16 @@ function isAllowedOrigin(origin) {
   );
 }
 
+function logCorsDecision(origin, allowed) {
+  if (!corsDebug) {
+    return;
+  }
+
+  const normalizedOrigin = origin ? origin.replace(/\/$/, "") : "<no-origin>";
+  const decision = allowed ? "allowed" : "rejected";
+  console.log(`[CORS] ${decision}: ${normalizedOrigin}`);
+}
+
 //middleware
 app.use(morgan("dev"));
 app.use(express.json());
@@ -40,12 +51,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (isAllowedOrigin(origin)) {
+      if (!origin) {
+        logCorsDecision(origin, true);
         return callback(null, true);
       }
 
+      if (isAllowedOrigin(origin)) {
+        logCorsDecision(origin, true);
+        return callback(null, true);
+      }
+
+      logCorsDecision(origin, false);
       return callback(new Error("Origin not allowed by CORS"));
     },
     credentials: true,
