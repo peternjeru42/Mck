@@ -61,6 +61,10 @@ app.use("/mpesa", mpesaRoutes);
 app.use("/statement", monthlyStatementsRoutes);
 app.use("/payment", payment);
 
+app.get("/", (_req, res) => {
+  res.status(200).json({ message: "Your backend is running correctly." });
+});
+
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
