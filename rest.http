@@ -1,0 +1,130 @@
+POST http://localhost:3001/student
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "admNo": 1,
+  "gender": "female",
+  "dob": "1990-01-01",
+  "birthCertNo": 12345,
+  "familyDoc": "Family Document",
+  "familyDocNo": 67890,
+  "medicalCondition": false,
+  "explainCondition": ""
+}
+
+@consumer_key = qfXIchM0JtBI6tq3zE8C4TJ1mO9guaA3Z7BCDDxWP6glNu8U
+@consumer_secret = FInFaEwAVcNaAfiGW7nkV4AJ4JaDAJ4XyxYbXKbj1vrVyg3qjGGRLbWwgC9YQvs9
+@daraja_auth = {{@base64(@consumer_key + ':' + @consumer_secret)}}
+
+### Get Access Token
+GET https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials
+Authorization: Basic {{daraja_auth}}
+
+### update student
+PUT http://localhost:3001/student/65b81d11b9b0fc349951e85a
+Content-Type: application/json
+
+{
+     "name": "Jane Doe"
+}
+
+### get students
+GET http://localhost:3001/student/
+
+### get one student
+GET http://localhost:3001/student/65bbd998b7f6545c411f3124
+
+### create guardian
+POST http://localhost:3001/guardian/65bf746602eae4cf211da5bf
+Content-Type: application/json
+
+{
+  "name": "John Guardian",
+  "dob": "1980-05-15",
+  "citizenship": "CountryXYZ",
+  "id": 123456789, 
+  "phone": 1234567890,
+  "email": "john.guardian@example.com",
+  "proffesion": "Engineer",
+  "nameOfOrg": "ABC Company",
+  "address": "123 Main Street",
+  "poBox": "PO12345"
+}
+
+###
+Content-Type: application/json
+
+{
+  "name": "John Guardian",
+  "dob": "1980-05-15",
+  "citizenship": "CountryXYZ",
+  "id": 123456789, 
+  "phone": 1234567890,
+  "email": "john.guardian@example.com",
+  "proffesion": "Engineer",
+  "nameOfOrg": "ABC Company",
+  "address": "123 Main Street",
+  "poBox": "PO12345"
+}
+
+### update guardian
+PUT http://localhost:3001/guardian/65b82cbd48238eed00a5c2be
+Content-Type: application/json
+
+{
+     "name": "Jane Doe"
+}
+
+### get guardians
+GET http://localhost:3001/guardian/
+
+### get one guardian
+GET http://localhost:3001/guardian/65b82cbd48238eed00a5c2be
+
+### delete one guardian
+DELETE  http://localhost:3001/guardian/65b82cbd48238eed00a5c2be
+
+### create person
+POST http://localhost:3001/person/65bca6f4737edb75cf858b9b
+Content-Type: application/json
+
+{
+  "name": "John person",
+  "phone": 1234567890
+}
+
+### get person
+GET http://localhost:3001/person/
+
+### get one guardian
+GET http://localhost:3001/person/65b835960df9f1cc4d39f225
+
+### delete one guardian
+DELETE  http://localhost:3001/person/65b835960df9f1cc4d39f225
+
+### create emergency contact
+POST http://localhost:3001/emergency-contact/65bca6f4737edb75cf858b9b
+Content-Type: application/json
+
+{
+  "name": "John person",
+  "phone": 1234567890
+}
+
+### create guardian
+POST http://localhost:3001/mpesa/confirmation
+Content-Type: application/json
+
+{
+  "name": "John Guardian",
+  "dob": "1980-05-15",
+  "citizenship": "CountryXYZ",
+  "id": 123456789, 
+  "phone": 1234567890,
+  "email": "john.guardian@example.com",
+  "proffesion": "Engineer",
+  "nameOfOrg": "ABC Company",
+  "address": "123 Main Street",
+  "poBox": "PO12345"
+}
