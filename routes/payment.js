@@ -24,6 +24,11 @@ const {
 const router = new Router()
 
 router.get("/", get);
+router.get("/callback", (_req, res) => {
+  res.status(405).json({
+    message: "This is a POST only endpoint and does not accept GET requests.",
+  });
+});
 router.post("/callback", paymentCallback); // This endpoint will be called by Equity Bank webhook
 router.post("/test-payment", testPayment); // TEST PAYMENT (manual simulation)
 router.post("/:studentId", create);

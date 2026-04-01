@@ -1,13 +1,21 @@
 // mailer.js
 const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+const emailEnabled = process.env.EMAIL_ENABLED !== "false";
+
+const transporter =
+  emailEnabled && process.env.EMAIL && process.env.EMAIL_PASSWORD
+    ? nodemailer.createTransport({
+        service: "gmail",
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      })
+    : null;
 
 async function sendPaymentReceipt({
   to,
@@ -18,6 +26,16 @@ async function sendPaymentReceipt({
   txCode,
   receiptPath,
 }) {
+  if (!emailEnabled) {
+    console.log("Email sending skipped because EMAIL_ENABLED=false");
+    return { skipped: true };
+  }
+
+  if (!transporter) {
+    console.log("Email sending skipped because email credentials are missing.");
+    return { skipped: true };
+  }
+
   const html = `
     <h2>Payment Confirmation</h2>
     <p>Dear ${guardianName},</p>

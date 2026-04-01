@@ -3,22 +3,33 @@ const Student = require("../models/student");
 const Transaction = require("../models/transaction");
 const { sendPaymentReceipt } = require("../helpers/mailer"); // Adjusted to your file name
 const generateReceipt = require("../helpers/generateReceipt"); // Your PDF function
+const mongoose = require("mongoose");
 /**
  * JENGA CALLBACK (IPN)
  * Triggered automatically by JengaHQ when a transaction occurs
  */
 // const { generatePDF } = require("./pdfService"); // Assume you have a PDF generator
 
+function extractAdmissionNumber(reference) {
+  const rawReference = String(reference || "").trim();
+  const match = rawReference.match(/^\d+/);
+
+  if (!match) {
+    return null;
+  }
+
+  return Number(match[0]);
+}
+
 const paymentCallback = async (req, res) => {
   try {
     const { transaction, customer, bank } = req.body;
 
     // 1. Clean Data
-    const receiptNo = transaction?.reference?.trim();
+    const receiptNo = String(transaction?.reference || "").trim();
     const amount = parseFloat(transaction?.amount);
-    const rawCustomerRef = customer?.reference || "";
-    const admNo = rawCustomerRef.trim().split(" ")[0];
- 
+    const admNo = extractAdmissionNumber(customer?.reference);
+
     // 2. Filter Success Credits
     if (
       bank?.transactionType !== "Credit" ||
@@ -27,6 +38,20 @@ const paymentCallback = async (req, res) => {
       return res
         .status(200)
         .json({ message: "Ignoring non-credit or failed transaction" });
+    }
+
+    if (!receiptNo || !Number.isFinite(amount)) {
+      return res.status(400).json({
+        status: "FAILED",
+        message: "Invalid transaction payload",
+      });
+    }
+
+    if (!Number.isInteger(admNo)) {
+      return res.status(200).json({
+        status: "FAILED",
+        message: "Invalid customer reference. Admission number must be numeric.",
+      });
     }
 
     // 3. Duplicate Check
@@ -156,6 +181,11 @@ async function get(req, res) {
  */
 function getOne(req, res) {
   let paymentId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(paymentId)) {
+    return res.status(400).json({ message: "Invalid payment id" });
+  }
+
   Payment.findById(paymentId)
     .then((paymentData) => {
       if (!paymentData)
