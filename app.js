@@ -11,15 +11,27 @@ const app = express();
 const defaultOrigins = [
   "http://localhost:3001",
   "https://convinientlyai.vercel.app",
+  "https://www.convinientlyai.vercel.app",
 ];
 
-const allowedOrigins = (
-  process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(",")
-    : defaultOrigins
-)
+const envOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
   .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
+
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
+
+function isAllowedOrigin(origin) {
+  const normalizedOrigin = origin.replace(/\/$/, "");
+
+  if (allowedOrigins.includes(normalizedOrigin)) {
+    return true;
+  }
+
+  return /^https:\/\/convinientlyai-[a-z0-9-]+\.vercel\.app$/i.test(
+    normalizedOrigin
+  );
+}
 
 //middleware
 app.use(morgan("dev"));
@@ -30,8 +42,7 @@ app.use(
     origin(origin, callback) {
       if (!origin) return callback(null, true);
 
-      const normalizedOrigin = origin.replace(/\/$/, "");
-      if (allowedOrigins.includes(normalizedOrigin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
