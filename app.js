@@ -8,18 +8,38 @@ const cors = require("cors");
 //create express app
 const app = express();
 
+const defaultOrigins = [
+  "http://localhost:3001",
+  "https://convinientlyai.vercel.app",
+];
+
+const allowedOrigins = (
+  process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(",")
+    : defaultOrigins
+)
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
 //middleware
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: [
-    "http://localhost:3001",
-    "https://your-ngrok-https://c6ac-102-210-247-218.ngrok-free.app.ngrok-free.app",
-    "https://convinientlyai.vercel.app/",
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+
+      const normalizedOrigin = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origin not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 
 //route handlers
 const studentRoutes = require("./routes/student");
@@ -27,19 +47,23 @@ const guardianRoutes = require("./routes/guardian");
 const personRoutes = require("./routes/person");
 const imgRoutes = require("./routes/images");
 const emergencyContactRoutes = require("./routes/emergency-contact");
-// const mpesaRoutes = require("./routes/mpesa");
+const mpesaRoutes = require("./routes/mpesa");
 const monthlyStatementsRoutes = require("./routes/payment");
 // const registerURLs = require("./helpers/registerMpesaUrls");
-const payment = require("./routes/payment")
+const payment = require("./routes/payment");
 
 app.use("/student", studentRoutes);
 app.use("/guardian", guardianRoutes);
 app.use("/person", personRoutes);
 app.use("/image", imgRoutes);
 app.use("/emergency-contact", emergencyContactRoutes);
-// app.use("/payment", mpesaRoutes);
+app.use("/mpesa", mpesaRoutes);
 app.use("/statement", monthlyStatementsRoutes);
-app.use("/payment", payment)
+app.use("/payment", payment);
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // registerURLs(); this was registering mpesa routes
 

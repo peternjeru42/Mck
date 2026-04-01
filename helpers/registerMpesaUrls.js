@@ -1,5 +1,7 @@
 const axios = require("axios");
-const {getAccessToken} = require("./mpesaToken");
+const { getAccessToken } = require("./mpesaToken");
+
+const baseUrl = (process.env.BASE_URL || "").replace(/\/$/, "");
 
 async function registerURLs() {
   console.log(1);
@@ -12,9 +14,13 @@ async function registerURLs() {
   const data = {
     ShortCode: process.env.MPESA_SHORTCODE, // your paybill or till number
     ResponseType: "Completed", // can be Completed or Cancelled
-    ConfirmationURL: "https://mck-1-oeqm.onrender.com/payment/confirmation",
-    ValidationURL: "https://mck-1-oeqm.onrender.com/payment/validation",
+    ConfirmationURL: `${baseUrl}/mpesa/confirmation`,
+    ValidationURL: `${baseUrl}/mpesa/validation`,
   };
+
+  if (!baseUrl) {
+    throw new Error("BASE_URL is required to register M-Pesa callback URLs.");
+  }
 
   try {
     console.log(4);
@@ -32,4 +38,4 @@ async function registerURLs() {
   }
 }
 
- module.exports =  registerURLs;
+module.exports = registerURLs;
